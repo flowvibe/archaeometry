@@ -1,17 +1,16 @@
 import streamlit as st
 from sentence_transformers import SentenceTransformer
 import openai
-import pinecone  
+from pinecone import Pinecone
 
-
-# Initialize secrets
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-
-pinecone.init(
+# Initialize Pinecone client
+pc = Pinecone(
     api_key=st.secrets["PINECONE_API_KEY"],
     environment=st.secrets["PINECONE_ENV"]
 )
-index = pinecone.Index(st.secrets["PINECONE_INDEX_NAME"])
+
+index = pc.Index(st.secrets["PINECONE_INDEX_NAME"])
+
 
 
 # Initialize model
@@ -83,6 +82,7 @@ If the answer cannot be found, say \"I don't know\" instead of making something 
         st.markdown("**Citations:**")
         for cite in citations:
             st.markdown(f"- {cite}")
+
 
 
 
