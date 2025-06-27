@@ -3,7 +3,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 import openai
-from pinecone import Pinecone, ServerlessSpec
+import Pinecone
 
 # Load environment
 load_dotenv()
