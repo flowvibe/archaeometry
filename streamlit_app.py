@@ -1,6 +1,6 @@
 import streamlit as st
 from sentence_transformers import SentenceTransformer
-import openai
+from openai import OpenAI
 from pinecone import Pinecone
 
 # Initialize Pinecone client
@@ -12,9 +12,6 @@ index = pc.Index(st.secrets["PINECONE_INDEX_NAME"])
 
 # Initialize model
 model = SentenceTransformer("intfloat/multilingual-e5-large")
-
-# Set OpenAI API key
-openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # App layout
 st.set_page_config(page_title="Archaeometry", layout="centered")
@@ -61,8 +58,9 @@ If the answer cannot be found, say "I don't know" instead of making something up
 
 ### Answer:"""
 
-        # Get completion
-        response = openai.ChatCompletion.create(
+        # Get completion using OpenAI v1+
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -70,8 +68,7 @@ If the answer cannot be found, say "I don't know" instead of making something up
             ],
             temperature=0.2
         )
-
-        answer = response.choices[0].message["content"].strip()
+        answer = response.choices[0].message.content.strip()
 
         # Show results
         st.markdown("**Answer:**")
