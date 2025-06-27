@@ -1,8 +1,8 @@
 streamlit
 openai
 python-dotenv
-pinecone-client
 sentence-transformers
 PyMuPDF
 beautifulsoup4
+pinecone-client>=3.0.0
 
