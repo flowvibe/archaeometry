@@ -1,6 +1,6 @@
 import streamlit as st
 from sentence_transformers import SentenceTransformer
-from openai import OpenAI
+import openai
 from pinecone import Pinecone
 
 # Initialize Pinecone client
@@ -8,13 +8,13 @@ pc = Pinecone(
     api_key=st.secrets["PINECONE_API_KEY"],
     environment=st.secrets["PINECONE_ENV"]
 )
-
 index = pc.Index(st.secrets["PINECONE_INDEX_NAME"])
-
-
 
 # Initialize model
 model = SentenceTransformer("intfloat/multilingual-e5-large")
+
+# Set OpenAI API key
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # App layout
 st.set_page_config(page_title="Archaeometry", layout="centered")
@@ -40,7 +40,7 @@ if query:
             metadata = match["metadata"]
             text = metadata.get("text", "[No text found]").strip()
             source = metadata.get("source", "?")
-            page = int(float(metadata.get("page", 0)))  # Clean up decimals
+            page = int(float(metadata.get("page", 0)))
 
             if text:
                 context_chunks.append(f"(Source: {source}, Page: {page})\n{text}")
@@ -51,7 +51,7 @@ if query:
         prompt = f"""You are a helpful assistant answering based on historical texts and scientific documents.
 
 Answer the following question using only the information in the provided context.
-If the answer cannot be found, say \"I don't know\" instead of making something up.
+If the answer cannot be found, say "I don't know" instead of making something up.
 
 ### Context:
 {context}
@@ -61,33 +61,25 @@ If the answer cannot be found, say \"I don't know\" instead of making something 
 
 ### Answer:"""
 
-client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        # Get completion
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.2
+        )
 
-response = client.chat.completions.create(
-    model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": prompt}
-    ],
-    temperature=0.2
-)
+        answer = response.choices[0].message["content"].strip()
 
-answer = response.choices[0].message.content.strip()
+        # Show results
+        st.markdown("**Answer:**")
+        st.markdown(answer)
 
-
-    # Show results
-    st.markdown("**Answer:**")
-    st.markdown(answer)
-
-    # Show citations only if the model gave a real answer
-    if not answer.lower().startswith("i don't know") and citations:
-        st.markdown("**Citations:**")
-        for cite in citations:
-            st.markdown(f"- {cite}")
-
-
-
-
-
-
+        # Show citations if applicable
+        if not answer.lower().startswith("i don't know") and citations:
+            st.markdown("**Citations:**")
+            for cite in citations:
+                st.markdown(f"- {cite}")
 
