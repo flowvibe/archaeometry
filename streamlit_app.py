@@ -1,6 +1,6 @@
 import streamlit as st
 from sentence_transformers import SentenceTransformer
-import openai
+from openai import OpenAI
 from pinecone import Pinecone
 
 # Initialize Pinecone client
@@ -61,17 +61,19 @@ If the answer cannot be found, say \"I don't know\" instead of making something 
 
 ### Answer:"""
 
-        # Get completion
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.2
-        )
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 
-        answer = response.choices[0].message["content"].strip()
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": prompt}
+    ],
+    temperature=0.2
+)
+
+answer = response.choices[0].message.content.strip()
+
 
     # Show results
     st.markdown("**Answer:**")
@@ -82,6 +84,7 @@ If the answer cannot be found, say \"I don't know\" instead of making something 
         st.markdown("**Citations:**")
         for cite in citations:
             st.markdown(f"- {cite}")
+
 
 
 
