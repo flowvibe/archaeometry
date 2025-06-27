@@ -3,7 +3,7 @@ import streamlit as st
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 import openai
-import pinecone 
+from pinecone_client import Pinecone
 
 # Load environment
 load_dotenv()
@@ -14,13 +14,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
 # Initialize Pinecone
-pinecone.init(
-    api_key=os.environ["PINECONE_API_KEY"],
-    environment=os.environ["PINECONE_ENV"]
-)
-
-index = pinecone.Index(os.environ["PINECONE_INDEX_NAME"])
-
+pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
+index = pc.Index(os.environ["PINECONE_INDEX_NAME"])
 
 # Initialize model
 model = SentenceTransformer("intfloat/multilingual-e5-large")
@@ -91,6 +86,7 @@ If the answer cannot be found, say \"I don't know\" instead of making something 
         st.markdown("**Citations:**")
         for cite in citations:
             st.markdown(f"- {cite}")
+
 
 
 
